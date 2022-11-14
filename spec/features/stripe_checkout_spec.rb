@@ -26,10 +26,9 @@ RSpec.describe "Stripe checkout", type: :feature do
 
     # Address
     expect(page).to have_current_path("/checkout/address")
-    fill_in "Customer E-Mail", with: "han@example.com"
+    fill_in "Customer Email", with: "han@example.com"
     within("#billing") do
-      fill_in "First Name", with: "Han"
-      fill_in "Last Name", with: "Solo"
+      fill_in "Name", with: "Han Solo"
       fill_in "Street Address", with: "YT-1300"
       fill_in "City", with: "Mos Eisley"
       select "United States of America", from: "Country"
@@ -100,14 +99,20 @@ RSpec.describe "Stripe checkout", type: :feature do
 
       it "shows an error", js: true do
         click_button "Save and Continue"
-        expect(page).to have_content("Your card's expiration year is invalid.")
+        expect(page).to have_content("Payments credit card Month is not a number")
+        expect(page).to have_content("Payments credit card Year is not a number")
       end
     end
   end
 
   context "when the CC number is invalid" do
+    let(:cc_security) { "12" }
     let(:cc_number) { "1111 1111 1111 1111" }
     let(:cc_expiration) { "01 / #{Time.current.year + 1}" }
+
+    before do
+      fill_in "Card Code", with: cc_security
+    end
 
     it "shows an error", js: true do
       click_button "Save and Continue"
@@ -121,7 +126,7 @@ RSpec.describe "Stripe checkout", type: :feature do
 
     it "shows an error", js: true do
       click_button "Save and Continue"
-      expect(page).to have_content("Could not find payment information")
+      expect(page).to have_content("Payments credit card Card Number can't be blank")
     end
   end
 end

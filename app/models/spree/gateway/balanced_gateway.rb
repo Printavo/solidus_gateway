@@ -8,11 +8,12 @@ module Spree
         # The Balanced ActiveMerchant gateway supports passing the token directly as the creditcard parameter
         creditcard = token
       end
+
       gateway.authorize(money, creditcard, gateway_options)
     end
 
     def capture(authorization, creditcard, gateway_options)
-      gateway_options[:on_behalf_of_uri] = self.preferred_on_behalf_of_uri
+      gateway_options[:on_behalf_of_uri] = preferred_on_behalf_of_uri
 
       gateway.capture((authorization.amount * 100).round, authorization.response_code, gateway_options)
     end
@@ -25,16 +26,16 @@ module Spree
       options[:login] = preferred_login
 
       card_store_response = gateway.store(payment.source, options)
-      card_uri = card_store_response.authorization.split(';').first
+      card_uri = card_store_response.authorization.split(";").first
 
       # A success just returns a string of the token. A failed request returns a bad request response with a message.
-      payment.source.update!(:gateway_payment_profile_id => card_uri)
-    rescue Error => ex
-      payment.send(:gateway_error, ex.message)
+      payment.source.update!(gateway_payment_profile_id: card_uri)
+    rescue Error => e
+      payment.send(:gateway_error, e.message)
     end
 
     def options
-      super().merge(:test => self.preferred_test_mode)
+      super.merge(test: preferred_test_mode)
     end
 
     def payment_profiles_supported?
