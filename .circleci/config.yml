@@ -17,6 +17,7 @@ ruby-env: &ruby-env
     LINUX: true
     TZ: "UTC"
     CIRCLE_ARTIFACTS: /tmp/artifacts
+    SOLIDUS_BRANCH: "v3.2.4"
 
 docker-image: &docker-image
   resource_class: small
@@ -29,7 +30,7 @@ setup-pre-steps-run: &setup-pre-steps-run
   # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
   - restore_cache:
       keys:
-        - solidus_gateway-{{ checksum "Gemfile" }}
+        - solidus_gateway-{{ checksum "Gemfile.lock" }}
         - solidus_gateway-
 
   - run:
@@ -42,7 +43,7 @@ setup-pre-steps-run: &setup-pre-steps-run
 
   # Store bundle cache for Ruby dependencies
   - save_cache:
-      key: solidus_gateway-{{ checksum "Gemfile" }}
+      key: solidus_gateway-{{ checksum "Gemfile.lock" }}
       paths:
         - ~/.cache/gems
 

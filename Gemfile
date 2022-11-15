@@ -9,7 +9,7 @@ end
 
 # hacks to speed up bundler resolution
 if branch == "master" || branch >= "v2.3"
-  gem "rails", "~> 6.0"
+  gem "rails", [">= 6.0", "< 7.0"]
 elsif branch <= "v2.2"
   gem "rails", "~> 5.0.7"
 else
@@ -40,4 +40,4 @@ end
 
 gemspec
 
-gem "solidus_frontend", "~> 3.3.alpha", :github => "solidusio/solidus_frontend"
+gem "solidus_frontend", "~> 3.2.4"

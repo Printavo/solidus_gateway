@@ -5,7 +5,6 @@
 tmp
 spec/dummy
 .byebug_history
-Gemfile.lock
 .rvmrc
 coverage
 .ruby-version
