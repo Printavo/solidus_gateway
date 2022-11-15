@@ -72,7 +72,8 @@ jobs: # a collection of steps
   build-app:
     <<: *docker-image
     <<: *spec-pre-steps
-    - checkout
+    steps:
+      - checkout
 
   run-specs:
     steps:
