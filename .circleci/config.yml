@@ -13,8 +13,6 @@ ruby-env: &ruby-env
     BUNDLE_RETRY: 3
     BUNDLE_PATH: vendor/bundle
     PAGER: cat
-    PGHOST: 127.0.0.1
-    PGUSER: circleci-demo-ruby
     RAILS_ENV: test
     LINUX: true
     TZ: "UTC"
@@ -25,16 +23,31 @@ docker-image: &docker-image
     - image: cimg/ruby:3.1.2-browsers # ...with this image as the primary container; this is where all `steps` will run
       <<: *ruby-env
 
-docker-build-image: &docker-build-image
-  resource_class: small
-  docker:
-    - image: cimg/ruby:3.1.2-browsers # ...with this image as the primary container; this is where the build step is done
-      <<: *ruby-env
-
 setup-pre-steps-run: &setup-pre-steps-run
+  # Restore bundle cache
+  # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+  - restore_cache:
+      keys:
+        - solidus_gateway-{{ checksum "Gemfile.lock" }}
+        - solidus_gateway-
+
+  - run:
+      name: Set --path flag for Bundler
+      command: bundle config set --local path '~/.cache/gems'
+
+  - run:
+      name: Set --deployment flag for Bundler
+      command: bundle config set --local deployment 'true'
+
   - run: # Install Ruby dependencies
       name: Bundle Install
       command: bundle install
+
+  # Store bundle cache for Ruby dependencies
+  - save_cache:
+      key: solidus_gateway-{{ checksum "Gemfile.lock" }}
+      paths:
+        - ~/.cache/gems
 
   - run:
       name: Install Dummy App
