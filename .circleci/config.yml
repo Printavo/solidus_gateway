@@ -16,6 +16,7 @@ ruby-env: &ruby-env
     RAILS_ENV: test
     LINUX: true
     TZ: "UTC"
+    CIRCLE_ARTIFACTS: /tmp/artifacts
 
 docker-image: &docker-image
   resource_class: small
@@ -79,8 +80,9 @@ jobs: # a collection of steps
 workflows:
   pr-checks:
     jobs:
-      - run-specs:
+      - build-app:
+          - checkout
           <<: *spec-pre-steps
-          filters:
-            branches:
-              ignore: master
+      - run-specs:
+          - requires:
+              - build-app
