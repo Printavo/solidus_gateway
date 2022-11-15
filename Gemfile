@@ -22,7 +22,6 @@ else
   gem "pg", "> 0.21"
 end
 
-gem "chromedriver-helper" if ENV["CI"]
 gem "net-smtp"
 
 group :development, :test do
