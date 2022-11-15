@@ -69,8 +69,9 @@ spec-pre-steps: &spec-pre-steps
         command: mkdir ~/rspec
 
 jobs: # a collection of steps
-  run-specs:
+  build-app:
     <<: *docker-image
+  run-specs:
     steps:
       - run:
           name: Run specs
