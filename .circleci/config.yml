@@ -56,6 +56,8 @@ setup-pre-steps-run: &setup-pre-steps-run
 
 spec-pre-steps: &spec-pre-steps
   pre-steps:
+    - checkout
+
     - *setup-pre-steps-run
 
     - browser-tools/install-chrome
@@ -71,9 +73,7 @@ jobs: # a collection of steps
 
   run-specs:
     <<: *docker-image
-    pre-steps:
-      - checkout
-      - *spec-pre-steps
+    <<: *spec-pre-steps
 
     steps:
       - run:
