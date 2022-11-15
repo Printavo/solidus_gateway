@@ -26,7 +26,7 @@ docker-image: &docker-image
 
 setup-pre-steps-run: &setup-pre-steps-run
   # Restore bundle cache
-  Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+  # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
   - restore_cache:
       keys:
         - solidus_gateway-{{ checksum "Gemfile.lock" }}
