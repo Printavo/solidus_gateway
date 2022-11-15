@@ -36,10 +36,6 @@ setup-pre-steps-run: &setup-pre-steps-run
       name: Set --path flag for Bundler
       command: bundle config set --local path '~/.cache/gems'
 
-  - run:
-      name: Set --deployment flag for Bundler
-      command: bundle config set --local deployment 'true'
-
   - run: # Install Ruby dependencies
       name: Bundle Install
       command: bundle install
