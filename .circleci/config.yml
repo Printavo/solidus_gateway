@@ -25,6 +25,9 @@ docker-image: &docker-image
       <<: *ruby-env
 
 setup-pre-steps-run: &setup-pre-steps-run
+  - attach_workspace:
+      at: .
+
   # Restore bundle cache
   # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
   # - restore_cache:
