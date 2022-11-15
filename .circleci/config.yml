@@ -82,5 +82,3 @@ workflows:
     jobs:
       - run-specs:
           <<: *spec-pre-steps
-          requires:
-            - build-app
