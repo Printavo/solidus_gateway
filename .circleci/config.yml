@@ -83,7 +83,7 @@ workflows:
       - build-app:
           pre-steps:
             - checkout
-            <<: *spec-pre-steps
+            - *spec-pre-steps
       - run-specs:
           requires:
             - build-app
