@@ -1,0 +1,73 @@
+# To disable auto deploy to staging on commit to master, set the environment variable `no_auto_deploy` to a non-blank value in the `Staging` context.
+# Link to the `Staging` context to set the `no_auto_deploy` environment variable: https://app.circleci.com/settings/organization/github/Printavo/contexts/3a3c38ca-d367-4230-adcc-65d2bcd85a19
+# Delete `no_auto_deploy` to re-enable auto deploy.
+
+version: 2.1
+
+orbs:
+  browser-tools: circleci/browser-tools@1.1.3
+
+ruby-env: &ruby-env
+  environment: # environment variables for primary container
+    BUNDLE_JOBS: 3
+    BUNDLE_RETRY: 3
+    BUNDLE_PATH: vendor/bundle
+    PAGER: cat
+    PGHOST: 127.0.0.1
+    PGUSER: circleci-demo-ruby
+    RAILS_ENV: test
+    LINUX: true
+    TZ: "UTC"
+
+docker-image: &docker-image
+  resource_class: small
+  docker:
+    - image: cimg/ruby:3.1.2-browsers # ...with this image as the primary container; this is where all `steps` will run
+      <<: *ruby-env
+
+docker-build-image: &docker-build-image
+  resource_class: small
+  docker:
+    - image: cimg/ruby:3.1.2-browsers # ...with this image as the primary container; this is where the build step is done
+      <<: *ruby-env
+
+setup-pre-steps-run: &setup-pre-steps-run
+  - run: # Install Ruby dependencies
+      name: Bundle Install
+      command: bundle install
+
+  - run:
+      name: Install Dummy App
+      command: bundle exec rake test_app
+
+spec-pre-steps: &spec-pre-steps
+  pre-steps:
+    - attach_workspace:
+        at: .
+
+    - *setup-pre-steps-run
+
+    - browser-tools/install-chrome
+    - browser-tools/install-chromedriver
+
+    - run:
+        name: Create rspec test results directory
+        command: mkdir ~/rspec
+
+jobs: # a collection of steps
+  run-specs:
+    <<: *docker-image
+    steps:
+      - run:
+          name: Run specs
+          command: bundle exec rspec spec
+          when: always
+
+workflows:
+  pr-checks:
+    jobs:
+      - run-requests-specs:
+          <<: *spec-pre-steps
+          filters:
+            branches:
+              ignore: master
