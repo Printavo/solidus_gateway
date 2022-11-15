@@ -75,6 +75,7 @@ jobs: # a collection of steps
       - checkout
 
   run-specs:
+    <<: *docker-image
     steps:
       - run:
           name: Run specs
