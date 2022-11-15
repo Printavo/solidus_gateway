@@ -25,29 +25,26 @@ docker-image: &docker-image
       <<: *ruby-env
 
 setup-pre-steps-run: &setup-pre-steps-run
-  - attach_workspace:
-      at: .
-
   # Restore bundle cache
-  # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
-  # - restore_cache:
-  #     keys:
-  #       - solidus_gateway-{{ checksum "Gemfile.lock" }}
-  #       - solidus_gateway-
+  Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+  - restore_cache:
+      keys:
+        - solidus_gateway-{{ checksum "Gemfile.lock" }}
+        - solidus_gateway-
 
-  # - run:
-  #     name: Set --path flag for Bundler
-  #     command: bundle config set --local path '~/.cache/gems'
+  - run:
+      name: Set --path flag for Bundler
+      command: bundle config set --local path '~/.cache/gems'
 
   - run: # Install Ruby dependencies
       name: Bundle Install
       command: bundle install
 
-  # # Store bundle cache for Ruby dependencies
-  # - save_cache:
-  #     key: solidus_gateway-{{ checksum "Gemfile.lock" }}
-  #     paths:
-  #       - ~/.cache/gems
+  # Store bundle cache for Ruby dependencies
+  - save_cache:
+      key: solidus_gateway-{{ checksum "Gemfile.lock" }}
+      paths:
+        - ~/.cache/gems
 
   - run:
       name: Install Dummy App
@@ -57,10 +54,10 @@ spec-pre-steps: &spec-pre-steps
   pre-steps:
     - checkout
 
+    - *setup-pre-steps-run
+
     - browser-tools/install-chrome
     - browser-tools/install-chromedriver
-
-    - *setup-pre-steps-run
 
     - run:
         name: Create rspec test results directory
