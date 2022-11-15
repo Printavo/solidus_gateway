@@ -57,10 +57,10 @@ spec-pre-steps: &spec-pre-steps
   pre-steps:
     - checkout
 
-    - *setup-pre-steps-run
-
     - browser-tools/install-chrome
     - browser-tools/install-chromedriver
+
+    - *setup-pre-steps-run
 
     - run:
         name: Create rspec test results directory
