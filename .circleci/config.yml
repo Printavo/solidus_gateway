@@ -73,7 +73,6 @@ jobs: # a collection of steps
 
   run-specs:
     <<: *docker-image
-    <<: *spec-pre-steps
 
     steps:
       - run:
@@ -86,5 +85,7 @@ workflows:
     jobs:
       - build-app
       - run-specs:
+          pre-steps:
+            <<: *spec-pre-steps
           requires:
             - build-app
