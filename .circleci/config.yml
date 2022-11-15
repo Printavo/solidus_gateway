@@ -29,7 +29,7 @@ setup-pre-steps-run: &setup-pre-steps-run
   # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
   - restore_cache:
       keys:
-        - solidus_gateway-{{ checksum "Gemfile.lock" }}
+        - solidus_gateway-{{ checksum "Gemfile" }}
         - solidus_gateway-
 
   - run:
@@ -42,7 +42,7 @@ setup-pre-steps-run: &setup-pre-steps-run
 
   # Store bundle cache for Ruby dependencies
   - save_cache:
-      key: solidus_gateway-{{ checksum "Gemfile.lock" }}
+      key: solidus_gateway-{{ checksum "Gemfile" }}
       paths:
         - ~/.cache/gems
 
