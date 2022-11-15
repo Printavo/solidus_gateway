@@ -81,8 +81,9 @@ workflows:
   pr-checks:
     jobs:
       - build-app:
-          - checkout
-          <<: *spec-pre-steps
+          - pre-steps:
+              - checkout
+              <<: *spec-pre-steps
       - run-specs:
           - requires:
               - build-app
