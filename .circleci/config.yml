@@ -70,7 +70,7 @@ spec-pre-steps: &spec-pre-steps
 
 jobs: # a collection of steps
   build-app:
-    <<: *docker-image
+    - *docker-image
     - checkout
     - *spec-pre-steps
 
