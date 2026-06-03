@@ -11,3 +11,5 @@ coverage
 .ruby-version
 pkg
 .idea/*
+vendor/bundle
+.bundle
