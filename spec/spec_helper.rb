@@ -6,48 +6,82 @@ require "capybara/rspec"
 ENV["RAILS_ENV"] ||= "test"
 
 require File.expand_path("../dummy/config/environment.rb",  __FILE__)
+
+require "rspec/rails"
+require "database_cleaner"
+
+# solidus_dev_support is dropped: its 'master' git branch no longer exists and the
+# released gem pins rspec-rails < 7.0 (unsatisfiable here). It only supplied the
+# feature/preferences helpers below, which the solidus fork already ships under
+# spree/testing_support — so we require those directly.
 require "spree/testing_support/preferences"
+require "spree/testing_support/url_helpers"
+require "spree/testing_support/controller_requests"
 
-require "solidus_dev_support/rspec/feature_helper"
-require "solidus_dev_support/testing_support/preferences"
+# Recover the dummy schema if rake test_app's chained db tasks left it incomplete.
+ActiveRecord::Migration.maintain_test_schema!
 
-Webdrivers::Chromedriver.update
+# Permit the classes serialized into Spree fixtures/factories (e.g. :order_with_line_items)
+# so Psych::DisallowedClass is not raised under Rails' safe YAML loader
+# (mirrors solidusio/solidus#4451).
+ActiveRecord.yaml_column_permitted_classes |= [BigDecimal, Date, Symbol, Time]
 
-Capybara.register_driver(:selenium_chrome_headless) do |app|
-  browser_options = ::Selenium::WebDriver::Chrome::Options.new
-  browser_options.args << "--window-size=1024,768"
-  browser_options.args << "--enable-features=NetworkService,NetworkServiceInProcess"
-  browser_options.args << "--no-sandbox"
-  browser_options.args << "--disable-dev-shm-usage"
+# Feature specs need a browser stack; guard the driver registration so the
+# (non-feature) model suite still loads on machines without selenium/chrome.
+begin
+  require "selenium-webdriver"
 
-  browser_options.args << "--headless"
-  browser_options.args << "--disable-gpu"
+  Capybara.register_driver(:selenium_chrome_headless) do |app|
+    browser_options = ::Selenium::WebDriver::Chrome::Options.new
+    browser_options.args << "--window-size=1024,768"
+    browser_options.args << "--enable-features=NetworkService,NetworkServiceInProcess"
+    browser_options.args << "--no-sandbox"
+    browser_options.args << "--disable-dev-shm-usage"
+    browser_options.args << "--headless"
+    browser_options.args << "--disable-gpu"
 
-  client = Selenium::WebDriver::Remote::Http::Default.new
-  client.read_timeout = 90
+    client = Selenium::WebDriver::Remote::Http::Default.new
+    client.read_timeout = 90
 
-  Capybara::Selenium::Driver.new(
-    app,
-    browser: :chrome,
-    http_client: client,
-    options: browser_options
-  )
+    Capybara::Selenium::Driver.new(
+      app,
+      browser: :chrome,
+      http_client: client,
+      options: browser_options
+    )
+  end
+
+  Capybara.javascript_driver = :selenium_chrome_headless
+rescue LoadError
+  # No browser stack available; feature specs will be skipped/error, model specs still run.
 end
-
-Capybara.javascript_driver = :selenium_chrome_headless
 
 require "braintree"
 
+require "spree/testing_support/factory_bot"
+Spree::TestingSupport::FactoryBot.add_paths_and_load!
+
 Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each { |f| require f }
 
-require "rspec/rails"
 RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
 
+  config.include Spree::TestingSupport::Preferences
+  config.include Spree::TestingSupport::UrlHelpers
+  config.include Spree::TestingSupport::ControllerRequests, type: :controller
+
   config.before :suite do
+    DatabaseCleaner.clean_with :truncation
+  end
+
+  config.before do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.start
     # Don't log Braintree to STDOUT.
     Braintree::Configuration.logger = Logger.new("spec/dummy/tmp/log")
   end
 
-  FactoryBot.find_definitions
+  config.after do
+    DatabaseCleaner.clean
+  end
 end

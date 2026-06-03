@@ -33,12 +33,13 @@ Gem::Specification.new do |s|
   s.add_dependency "activemerchant", "!= 1.58.0", "!= 1.59.0"
 
   s.add_development_dependency "braintree", "~> 2.0"
-  s.add_development_dependency "rspec-rails", "~> 3.2"
+  s.add_development_dependency "rspec-rails", "~> 7.1"
   s.add_development_dependency "simplecov"
   s.add_development_dependency "sqlite3"
-  s.add_development_dependency "capybara", "~> 2.18"
+  # Unpin capybara: 2.18 predates rack-test/Rails 7+; let bundler resolve a current 3.x.
+  s.add_development_dependency "capybara"
   s.add_development_dependency "capybara-screenshot"
-  s.add_development_dependency "poltergeist", "~> 1.9"
+  # poltergeist (PhantomJS) is dead and chromedriver-helper is yanked; rely on selenium-webdriver only.
   s.add_development_dependency "selenium-webdriver"
-  s.add_development_dependency "database_cleaner", "~> 1.5"
+  s.add_development_dependency "database_cleaner", "~> 2.0"
 end

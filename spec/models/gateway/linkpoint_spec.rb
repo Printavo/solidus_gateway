@@ -18,10 +18,14 @@ describe Spree::Gateway::Linkpoint do
     end
   end
 
+  # NOTE: no upstream equivalent — solidusio/solidus_gateway is abandoned and never
+  # addressed Ruby 3.0's kwargs/positional separation. Gateway::Linkpoint passes a
+  # positional options hash (gateway.public_send(method, *args << options)), so these
+  # expectations must match a positional Hash, not keyword arguments.
   context '#authorize' do
     it 'adds the discount to the subtotal' do
       expect(mock_linkpoint_gateway).to receive(:authorize)
-        .with(money, credit_card, subtotal: 2, discount: 0)
+        .with(money, credit_card, { subtotal: 2, discount: 0 })
       linkpoint_gateway.authorize(money, credit_card, options)
     end
   end
@@ -29,7 +33,7 @@ describe Spree::Gateway::Linkpoint do
   context '#purchase' do
     it 'adds the discount to the subtotal' do
       expect(mock_linkpoint_gateway).to receive(:purchase)
-        .with(money, credit_card, subtotal: 2, discount: 0)
+        .with(money, credit_card, { subtotal: 2, discount: 0 })
       linkpoint_gateway.purchase(money, credit_card, options)
     end
   end
@@ -39,7 +43,7 @@ describe Spree::Gateway::Linkpoint do
 
     it 'adds the discount to the subtotal' do
       expect(mock_linkpoint_gateway).to receive(:capture)
-        .with(money, authorization, subtotal: 2, discount: 0)
+        .with(money, authorization, { subtotal: 2, discount: 0 })
       linkpoint_gateway.capture(money, authorization, options)
     end
   end
@@ -47,7 +51,7 @@ describe Spree::Gateway::Linkpoint do
   context '#void' do
     it 'adds the discount to the subtotal' do
       expect(mock_linkpoint_gateway).to receive(:void)
-        .with(identification, subtotal: 2, discount: 0)
+        .with(identification, { subtotal: 2, discount: 0 })
       linkpoint_gateway.void(identification, options)
     end
   end
@@ -55,7 +59,7 @@ describe Spree::Gateway::Linkpoint do
   context '#credit' do
     it 'adds the discount to the subtotal' do
       expect(mock_linkpoint_gateway).to receive(:credit)
-        .with(money, identification, subtotal: 2, discount: 0)
+        .with(money, identification, { subtotal: 2, discount: 0 })
       linkpoint_gateway.credit(money, identification, options)
     end
   end
