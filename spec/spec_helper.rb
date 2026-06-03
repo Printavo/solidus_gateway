@@ -18,8 +18,13 @@ require "spree/testing_support/preferences"
 require "spree/testing_support/url_helpers"
 require "spree/testing_support/controller_requests"
 
-# Recover the dummy schema if rake test_app's chained db tasks left it incomplete.
-ActiveRecord::Migration.maintain_test_schema!
+# NOTE: no upstream equivalent — we intentionally do NOT call
+# ActiveRecord::Migration.maintain_test_schema! here. The gateway engine's migrations
+# are copied into the dummy (with new timestamps + a "comes from solidus_gateway"
+# marker) by rake test_app, but maintain_test_schema! reloads db/schema.rb and then
+# re-checks pending against the engine's *original* timestamps, reporting them as
+# perpetually pending. rake test_app already migrates the dummy fully, so we rely on
+# that instead. (Equivalent in spirit to disabling maintain_test_schema for engines.)
 
 # Permit the classes serialized into Spree fixtures/factories (e.g. :order_with_line_items)
 # so Psych::DisallowedClass is not raised under Rails' safe YAML loader
@@ -65,6 +70,10 @@ Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each { |f| require f }
 
 RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
+
+  # The gateway specs call bare create(:country) etc.; solidus_dev_support used to
+  # mix in FactoryBot::Syntax::Methods globally, so do it explicitly now that it's gone.
+  config.include FactoryBot::Syntax::Methods
 
   config.include Spree::TestingSupport::Preferences
   config.include Spree::TestingSupport::UrlHelpers

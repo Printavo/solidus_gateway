@@ -34,7 +34,9 @@ task :test_app do
   #      no-op); we split them into separate processes.
   Spree::DummyGenerator.start ["--lib_name=#{ENV['LIB_NAME']}", "--quiet"]
 
-  manifest = File.join("spec", "dummy", "app", "assets", "config", "manifest.js")
+  dummy_path = File.expand_path("spec/dummy", __dir__)
+
+  manifest = File.join(dummy_path, "app", "assets", "config", "manifest.js")
   unless File.exist?(manifest)
     FileUtils.mkdir_p(File.dirname(manifest))
     File.write(manifest, "//= link_tree ../images\n//= link_directory ../stylesheets .css\n")
@@ -43,10 +45,18 @@ task :test_app do
   Solidus::InstallGenerator.start ["--lib_name=#{ENV['LIB_NAME']}", "--auto-accept", "--with-authentication=false", "--payment-method=none", "--migrate=false", "--seed=false", "--sample=false", "--quiet", "--user_class=Spree::LegacyUser"]
 
   puts "Setting up dummy database..."
-  Dir.chdir("spec/dummy") do
-    sh "bin/rails db:environment:set RAILS_ENV=test"
-    sh "bin/rails db:drop RAILS_ENV=test"
-    sh "bin/rails db:create RAILS_ENV=test"
-    sh "bin/rails db:migrate VERBOSE=false RAILS_ENV=test"
+  # The Solidus dummy generator leaves cwd inside spec/dummy; chdir by absolute path.
+  Dir.chdir(dummy_path) do
+    # Invoke via `ruby bin/rails` rather than the bare binstub: under `sh` the
+    # binstub shebang fails to resolve here (exit 127). Separate processes are
+    # required so the Rails 8 schema cache does not make db:migrate a no-op.
+    sh "ruby bin/rails db:environment:set RAILS_ENV=test"
+    sh "ruby bin/rails db:drop RAILS_ENV=test"
+    sh "ruby bin/rails db:create RAILS_ENV=test"
+    # SolidusSupport::EngineExtensions already adds this extension's db/migrate to the
+    # dummy app's migration paths, so db:migrate runs the gateway migrations in place.
+    # We do NOT copy them via railties:install:migrations — copying re-timestamps them,
+    # leaving the engine's originals perpetually "pending" under maintain_test_schema!.
+    sh "ruby bin/rails db:migrate VERBOSE=false RAILS_ENV=test"
   end
 end
