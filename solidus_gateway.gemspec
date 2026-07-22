@@ -11,7 +11,8 @@ Gem::Specification.new do |s|
   s.version     = SolidusGateway::VERSION
   s.summary     = "Additional Payment Gateways for Solidus"
   s.description = s.summary
-  s.required_ruby_version = ">= 2.1"
+  # honeybadger (~> 6.0) requires Ruby >= 3.0; keep the floor consistent.
+  s.required_ruby_version = ">= 3.0"
 
   s.author       = "Solidus Team"
   s.email        = "contact@solidus.io"
