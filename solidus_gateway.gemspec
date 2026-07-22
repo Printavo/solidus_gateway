@@ -11,7 +11,8 @@ Gem::Specification.new do |s|
   s.version     = SolidusGateway::VERSION
   s.summary     = "Additional Payment Gateways for Solidus"
   s.description = s.summary
-  s.required_ruby_version = ">= 2.1"
+  # honeybadger (~> 6.0) requires Ruby >= 3.0; keep the floor consistent.
+  s.required_ruby_version = ">= 3.0"
 
   s.author       = "Solidus Team"
   s.email        = "contact@solidus.io"
@@ -31,6 +32,11 @@ Gem::Specification.new do |s|
   #
   # This was resolved in v1.60, but we still need to skip 1.58 & 1.59.
   s.add_dependency "activemerchant", "!= 1.58.0", "!= 1.59.0"
+
+  # The Stripe gateway reports Level 3 checksum failures via Honeybadger.notify.
+  # Pin the major so the host can't upgrade Honeybadger past a notify signature
+  # change without also updating this gem (a 6.x bump broke the call at runtime).
+  s.add_dependency "honeybadger", "~> 6.0"
 
   s.add_development_dependency "braintree", "~> 2.0"
   s.add_development_dependency "rspec-rails", "~> 3.2"
